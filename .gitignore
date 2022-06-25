@@ -130,3 +130,7 @@ dmypy.json
 
 #data
 data/
+clients_code/
+predictions/
+.ipynb_checkpoints/
+checkpoints/
