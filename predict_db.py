@@ -3,44 +3,36 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sys import argv
 
-def one_hot_encoding(df, columns):
-    df = df.copy()
-    for col, pref in columns.items():
-        dummy = pd.get_dummies(df[col], prefix=pref)
-        dummy.astype(bool)
-        df = pd.concat([df, dummy], axis=1)
-        df = df.drop(col, axis=1)
-    return df
+class Horse_model():
+    def __init__(self,file):
+        self.file = file
+        self.df = pd.read_csv(f'./data/{file}.csv')
+        self.input = self.df.shape[1]
 
-def preprocessing(df):
-    df = df.copy()
-    try:
-        df = one_hot_encoding(df, {'Row':'Row','Sex': 'Sex'})
-    except:
-        df = one_hot_encoding(df, {'Row':'Row','sex': 'Sex'})
-    df = df[['StartingOdds','RecentPlacePercent','RecentWinPercent','Class','Row_1','Sex_COLT','Sex_HORSE','laststart']]
-    df = pd.DataFrame(StandardScaler().fit_transform(df), columns=df.columns)
-    return df
+    def preprocess(self):
+        self.df = self.df[['StartingOdds','RecentWinPercent','Class','laststart']]
+        median = self.df.median()
+        self.df = self.df.fillna(median)
+        self.df = pd.DataFrame(StandardScaler().fit_transform(self.df), columns=self.df.columns)
+    
+    def create_nn_model(self):
+        input = tf.keras.Input(shape=(4,))
+        x = tf.keras.layers.Dense(8, activation='relu')(input)
+        x = tf.keras.layers.Dense(4, activation='relu')(x)
+        output = tf.keras.layers.Dense(1, activation='sigmoid')(x)
+        self.model = tf.keras.Model(input, output)
+        self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        self.model.load_weights('./checkpoints/my_checkpoint')
 
-def create_model(df):
-    input = tf.keras.Input(shape=(df.shape[1],))
-    x = tf.keras.layers.Dense(128, activation='relu')(input)
-    x = tf.keras.layers.Dense(64, activation='relu')(x)
-    x = tf.keras.layers.Dense(32, activation='relu')(x)
-    output = tf.keras.layers.Dense(1, activation='sigmoid')(x)
-    nn_model = tf.keras.Model(input, output)
-    nn_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    nn_model.load_weights('./checkpoints/my_checkpoint')
-    return nn_model
-
-def predict_db(df,nn_model):
-    winners = nn_model.predict(df)
-    return winners
+    def predict(self):
+        self.pred = self.model.predict(self.df)
+        self.pred = pd.DataFrame(self.pred, columns=['Winners'])
+        self.pred.to_csv(f'./predictions/{self.file}_pred_only.csv', index=False)
+        self.df['pred'] = self.pred
+        self.df.to_csv(f'./predictions/{self.file}_pred.csv',index=False)
 
 if __name__ == '__main__':
-    df = pd.read_csv(f'./data/{argv[1]}.csv')
-    df = preprocessing(df)
-    nn_model = create_model(df)
-    winners = predict_db(df,nn_model)
-    winners = pd.DataFrame(winners, columns=['Winners'])
-    winners.to_csv(f'./predictions/winners_{argv[1]}.csv', index=False)
+    horse = Horse_model(argv[1])
+    horse.preprocess()
+    horse.create_nn_model()
+    horse.predict()
