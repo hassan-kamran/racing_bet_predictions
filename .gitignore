@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 #data
-data/raw_data
+data/
 clients_code/
 predictions/
 .ipynb_checkpoints/
