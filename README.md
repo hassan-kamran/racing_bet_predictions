@@ -1,3 +1,2 @@
 # racing_bet_predictions
-
-Pridicit Winner of a race from historic race data.
+Predicting the winning horse for a race from historic race data.
