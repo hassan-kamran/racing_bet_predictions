@@ -31,9 +31,23 @@ class Horse_model():
         self.pred = self.pred*100
         self.df_combined = pd.concat([self.df_identifier, self.df_features, self.pred], axis=1)
         self.df_combined.to_csv(f'./predictions/{self.file}_pred.csv',index=False)
+    
+    def format(self):
+        grouped_data = self.df_combined.groupby(['DayCalender','RaceName','Venue','RaceDistance'], as_index=False)
+        for group in grouped_data:
+            info = f'Date:{group[0][0]}\nRace Name:{group[0][1]}\nVenue:{group[0][2]}\nRace Distance:{group[0][3]}\n'
+            with open(f'./predictions/{self.file}_pred_formated.txt', 'a') as f:
+                f.write(info+'\n')
+                count = 1
+                for row in group[1].itertuples(index=False):
+                    row = dict(row._asdict())
+                    f.write(f'{count}.Horse Name:{row["HorseName"]},Win Probability %:{row["Winners_Probability"]}\n')
+                    count += 1
+                f.write('\n')
 
 if __name__ == '__main__':
     horse = Horse_model(argv[1])
     horse.preprocess()
     horse.create_nn_model()
     horse.predict()
+    horse.format()
