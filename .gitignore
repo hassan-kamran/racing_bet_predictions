@@ -2,7 +2,6 @@ data/
 clients_code/
 predictions/
 .ipynb_checkpoints/
-checkpoints/
 .DS_Store
 video_files/
 model/
