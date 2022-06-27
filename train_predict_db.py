@@ -1,6 +1,6 @@
-import tensorflow as tf
 import pandas as pd
 from sys import argv
+import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
 class Horse_model():
@@ -41,7 +41,7 @@ class Horse_model():
         self.df_features_scaled = pd.DataFrame(StandardScaler().fit_transform(self.df_features), columns=self.df_features.columns)
 
     def load_nn_model(self):
-        self.model = tf.keras.models.load_model('./model/nn_model.h5')
+        self.nn_model = tf.keras.models.load_model('./model/nn_model.h5')
 
     def predict(self):
         self.pred = self.model.predict(self.df_features_scaled)
