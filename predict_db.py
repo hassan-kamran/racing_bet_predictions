@@ -7,13 +7,14 @@ class Horse_model():
     def __init__(self,file):
         self.file = file
         self.df = pd.read_csv(f'./data/raw_data/{file}.csv')
-        self.input = self.df.shape[1]
 
     def preprocess(self):
-        self.df = self.df[['StartingOdds','RecentWinPercent','Class','laststart']]
-        median = self.df.median()
-        self.df = self.df.fillna(median)
-        self.df_scaled = pd.DataFrame(StandardScaler().fit_transform(self.df), columns=self.df.columns)
+        self.df_features = self.df[['StartingOdds','RecentWinPercent','Class','laststart']]
+        self.input = self.df_features.shape[1]
+        self.df_identifier = self.df[['DayCalender','RaceName','Venue','RaceDistance','HorseName']]
+        median = self.df_features.median()
+        self.df_features = self.df_features.fillna(median)
+        self.df_features_scaled = pd.DataFrame(StandardScaler().fit_transform(self.df_features), columns=self.df_features.columns)
     
     def create_nn_model(self):
         input = tf.keras.Input(shape=(4,))
@@ -25,11 +26,11 @@ class Horse_model():
         self.model.load_weights('./checkpoints/my_checkpoint')
 
     def predict(self):
-        self.pred = self.model.predict(self.df_scaled)
-        self.pred = pd.DataFrame(self.pred, columns=['Winners'])
-        self.pred.to_csv(f'./predictions/{self.file}_pred_only.csv', index=False)
-        self.df['Win_pred'] = self.pred
-        self.df.to_csv(f'./predictions/{self.file}_pred.csv',index=False)
+        self.pred = self.model.predict(self.df_features_scaled)
+        self.pred = pd.DataFrame(self.pred, columns=['Winners_Probability'])
+        self.pred = self.pred*100
+        self.df_combined = pd.concat([self.df_identifier, self.df_features, self.pred], axis=1)
+        self.df_combined.to_csv(f'./predictions/{self.file}_pred.csv',index=False)
 
 if __name__ == '__main__':
     horse = Horse_model(argv[1])
