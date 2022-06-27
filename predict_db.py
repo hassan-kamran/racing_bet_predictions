@@ -13,7 +13,7 @@ class Horse_model():
         self.df = self.df[['StartingOdds','RecentWinPercent','Class','laststart']]
         median = self.df.median()
         self.df = self.df.fillna(median)
-        self.df = pd.DataFrame(StandardScaler().fit_transform(self.df), columns=self.df.columns)
+        self.df_scaled = pd.DataFrame(StandardScaler().fit_transform(self.df), columns=self.df.columns)
     
     def create_nn_model(self):
         input = tf.keras.Input(shape=(4,))
@@ -25,10 +25,10 @@ class Horse_model():
         self.model.load_weights('./checkpoints/my_checkpoint')
 
     def predict(self):
-        self.pred = self.model.predict(self.df)
+        self.pred = self.model.predict(self.df_scaled)
         self.pred = pd.DataFrame(self.pred, columns=['Winners'])
         self.pred.to_csv(f'./predictions/{self.file}_pred_only.csv', index=False)
-        self.df['pred'] = self.pred
+        self.df['Win_pred'] = self.pred
         self.df.to_csv(f'./predictions/{self.file}_pred.csv',index=False)
 
 if __name__ == '__main__':
