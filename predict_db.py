@@ -6,7 +6,7 @@ from sys import argv
 class Horse_model():
     def __init__(self,file):
         self.file = file
-        self.df = pd.read_csv(f'./data/{file}.csv')
+        self.df = pd.read_csv(f'./data/raw_data/{file}.csv')
         self.input = self.df.shape[1]
 
     def preprocess(self):
