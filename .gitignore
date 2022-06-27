@@ -5,3 +5,4 @@ predictions/
 checkpoints/
 .DS_Store
 video_files/
+model/
