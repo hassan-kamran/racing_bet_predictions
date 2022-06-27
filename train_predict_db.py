@@ -62,7 +62,7 @@ class Horse_model():
                     f.write(f'{count}.Horse Name:{row["HorseName"]},Win Probability %:{row["Winners_Probability"]}\n')
                     count += 1
                 f.write('\n')
-
+                
 if __name__ == '__main__':
     if argv[1] == '-t':
         file = []
