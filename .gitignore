@@ -3,5 +3,4 @@ clients_code/
 predictions/
 .ipynb_checkpoints/
 .DS_Store
-video_files/
 model/
