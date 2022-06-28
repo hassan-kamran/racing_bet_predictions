@@ -11,12 +11,12 @@ class Horse_model():
     def load_training_data(self):
         loaded_files = []
         for file in self.file:
-            df = pd.read_csv(f'./data/raw_data/{file}.csv')
+            df = pd.read_csv(f'./data/{file}.csv')
             df = df[['Winner','StartingOdds','RecentWinPercent','Class','laststart']]
             loaded_files.append(df)
         self.df = pd.concat(loaded_files, axis=0)
         self.df.fillna(self.df.median(), inplace=True)
-        self.df.to_csv('./data/horse_data.csv', index=False)
+        self.df.to_csv('./data/horse_data_proccessed.csv', index=False)
         self.x = self.df.drop(['Winner'], axis=1)
         self.x = pd.DataFrame(StandardScaler().fit_transform(self.x), columns=self.x.columns)
         self.y = self.df['Winner']
@@ -34,7 +34,7 @@ class Horse_model():
         self.nn_model.save('./model/nn_model.h5')
 
     def preprocess(self):
-        self.df = pd.read_csv(f'./data/raw_data/{self.file}.csv')
+        self.df = pd.read_csv(f'./data/{self.file}.csv')
         self.df_features = self.df[['StartingOdds','RecentWinPercent','Class','laststart']]
         self.input = self.df_features.shape[1]
         self.df_identifier = self.df[['DayCalender','RaceName','Venue','RaceDistance','HorseName']]
