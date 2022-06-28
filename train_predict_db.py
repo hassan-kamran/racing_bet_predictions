@@ -1,6 +1,7 @@
 import pandas as pd
 from sys import argv
 import tensorflow as tf
+import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 class Horse_model():
@@ -44,11 +45,18 @@ class Horse_model():
         self.nn_model = tf.keras.models.load_model('./model/nn_model.h5')
 
     def predict(self):
-        self.pred = self.model.predict(self.df_features_scaled)
+        self.pred = self.nn_model.predict(self.df_features_scaled)
         self.pred = pd.DataFrame(self.pred, columns=['Winners_Probability'])
         self.pred = self.pred*100
         self.df_combined = pd.concat([self.df_identifier, self.df_features, self.pred], axis=1)
         self.df_combined.to_csv(f'./predictions/{self.file}_pred.csv',index=False)
+
+    @staticmethod
+    def scale(prob):
+        prob = np.array(prob)
+        sum = prob.sum()
+        prob = (prob/sum)*100
+        return prob.round(2).tolist()
 
     def format(self):
         grouped_data = self.df_combined.groupby(['DayCalender','RaceName','Venue','RaceDistance'], as_index=False)
@@ -57,12 +65,18 @@ class Horse_model():
             with open(f'./predictions/{self.file}_pred_formated.txt', 'a') as f:
                 f.write(info+'\n')
                 count = 1
+                horse_names = []
+                horse_winners = []
                 for row in group[1].itertuples(index=False):
-                    row = dict(row._asdict())
-                    f.write(f'{count}.Horse Name:{row["HorseName"]},Win Probability %:{row["Winners_Probability"]}\n')
+                    row = row._asdict()
+                    horse_names.append(row['HorseName'])
+                    horse_winners.append(row['Winners_Probability'])
+                horse_winners_scaled = self.scale(horse_winners)
+                for horse_name, horse_winner in zip(horse_names, horse_winners_scaled):
+                    f.write(f'{count}.{horse_name}:\t{horse_winner}%\n'.expandtabs(30))
                     count += 1
                 f.write('\n')
-                
+
 if __name__ == '__main__':
     if argv[1] == '-t':
         file = []
